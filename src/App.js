@@ -1,26 +1,26 @@
-import React, { useEffect, useState, Route, Routes } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import Sidebar from './component/Sidebar/Sidebar';
 import Chat from './component/MessageChat/Chat';
 import Login from './component/LoginForm/Login';
 import Amplify from 'aws-amplify';
-import { withAuthenticator } from '@aws-amplify/ui-react';
 import awsExports from './aws-exports';
-// import { withAuthenticator } from '@aws-amplify/ui-react';
+import { withAuthenticator } from '@aws-amplify/ui-react';
 import { Auth, Hub } from 'aws-amplify';
 import '@aws-amplify/ui-react/styles.css';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 Amplify.configure(awsExports);
 
 function App() {
     const [currentUser, setCurrentUser] = useState('');
 
-    useEffect(() => {
-        Hub.listen('auth', (event) => {
-            console.log(event);
-            setCurrentUser(event.payload.data);
-        });
-    });
+    // useEffect(() => {
+    //     Hub.listen('auth', (event) => {
+    //         console.log(event);
+    //         setCurrentUser(event.payload.data);
+    //     });
+    // });
 
     return (
         // BEM naming convention
@@ -34,10 +34,18 @@ function App() {
                 ) : (
                     <Login />
                 )} */}
-                {/* Sidebar */}
-                <Sidebar />
-                {/* Chats */}
-                <Chat />
+                <Router>
+                    <Sidebar />
+                    <Switch>
+                        <Route path="/rooms/:roomId">
+                            <Chat />
+                        </Route>
+                        <Route path="/">
+                            <Chat />
+                        </Route>
+                    </Switch>
+                </Router>
+
                 {/* <button onClick={logOut}>Log out</button> */}
             </div>
         </div>

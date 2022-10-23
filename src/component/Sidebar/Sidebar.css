@@ -57,3 +57,12 @@
     background-color: white;
     overflow: scroll;
 }
+.user_list {
+    padding: 0;
+    list-style: none;
+}
+.text {
+    position: relative;
+    top: 7px;
+    left: 5px;
+}

@@ -6,14 +6,54 @@ import AttachFile from '@material-ui/icons/AttachFile';
 import MoreVert from '@material-ui/icons/MoreVert';
 import InsertEmoticonIcon from '@material-ui/icons/InsertEmoticon';
 import MicIcon from '@material-ui/icons/Mic';
+import { useParams } from 'react-router-dom';
+import { ChatRoom, Message } from '../../models';
+import { DataStore, SortDirection } from 'aws-amplify';
+import MessageProp from '../Message/MessageProp';
 
 function Chat() {
     const [input, setInput] = useState('');
     const [seed, setSeed] = useState('');
+    const { roomId } = useParams();
+    const [chatRoom, setChatRoom] = useState(ChatRoom | null);
+    const [messages, setMessages] = useState([Message]);
+
+    useEffect(() => {
+        fetchedChatRoom();
+    }, []);
+
+    useEffect(() => {
+        fetchedMessages();
+    }, [chatRoom]);
 
     useEffect(() => {
         setSeed(Math.floor(Math.random() * 5000));
     }, []);
+
+    const fetchedChatRoom = async () => {
+        if (!roomId) return;
+
+        const chatRoom = await DataStore.query(ChatRoom, roomId);
+        if (!chatRoom) {
+            console.error('Coundnt find chat room with this id');
+        } else {
+            console.log(chatRoom);
+            setChatRoom(chatRoom);
+        }
+    };
+
+    const fetchedMessages = async () => {
+        if (!chatRoom) {
+            return;
+        }
+        const fetchedMessages = await DataStore.query(Message, (message) => message.chatroomID('eq', chatRoom?.id), {
+            sort: (message) => message.createdAt(SortDirection.DESCENDING),
+        });
+        setMessages(fetchedMessages);
+    };
+    if (!chatRoom) {
+        return;
+    }
 
     const sendMessage = (e) => {
         e.preventDefault();
@@ -43,11 +83,11 @@ function Chat() {
             </div>
 
             <div className="chat__body">
-                <p className={`chat__message ${true && 'chat__recieve'}`}>
-                    <span className="chat__name">Quan Nguyen</span>
-                    Hello, Quan
-                    <span className="chat__timestamp">3:52pm</span>
-                </p>
+                <ul className="list__text">
+                    {messages.map((message) => {
+                        return <MessageProp key={message.id} message={message} />;
+                    })}
+                </ul>
             </div>
 
             <div className="chat__footer">

@@ -3,63 +3,33 @@ import { Avatar } from '@material-ui/core';
 import './SidebarChat.css';
 import { DataStore, Auth } from 'aws-amplify';
 import { ChatRoomUser, ChatRoom, User, Message } from '/Users/admin/Documents/ChatApp/CNM/webchatapp/src/models';
+import { Link } from 'react-router-dom';
 
-function SidebarChat({ addNewChat }) {
+function SidebarChat({ addNewChat, chatRoom }) {
     const [seed, setSeed] = useState('');
-    const [chatRooms, setChatRooms] = useState([ChatRoom]);
     const [user, setUser] = useState(User | null);
     const [lastMessage, setLastMessage] = useState(Message | undefined);
-
     useEffect(() => {
-        const fetchChatRoom = async () => {
-            const userData = await Auth.currentAuthenticatedUser();
-            const query = await DataStore.query(ChatRoomUser);
-            const chatRoom = (await DataStore.query(ChatRoomUser))
-                .filter((chatRoom) => chatRoom.user.id === userData.attributes.sub)
-                .map((chatRoom) => chatRoom.chatRoom);
-
-            console.log(chatRoom);
-
-            const chatRoomUsers = await (
-                await DataStore.query(ChatRoomUser)
-            ).filter((chatRoomUser) => chatRoomUser.chatRoom.id === chatRoom.id);
-            // .map((chatRoomUser) => chatRoomUser.user);
-
-            // setChatRooms(chatRoom);
-
-            console.log(chatRoomUsers);
-
-            // console.log(chatRooms);
+        const fetchUsers = async () => {
+            const chatRoomUsers = await (await DataStore.query(ChatRoomUser))
+                .filter((chatRoomUser) => chatRoomUser.chatRoom.id === chatRoom.id)
+                .map((chatRoomUser) => chatRoomUser.user);
+            // console.log(chatRoomUsers);
+            const authUser = await Auth.currentAuthenticatedUser();
+            setUser(chatRoomUsers.find((user) => user.id != authUser.attributes.sub));
         };
-        fetchChatRoom();
+        fetchUsers();
     }, []);
-
-    // useEffect(() => {
-    //     const fetchUsers = async () => {
-    //       const chatRoomUsers =  (await DataStore.query(ChatRoomUser))
-    //         .filter((chatRoomUser) => chatRoomUser.chatRoom.id === chatRooms.id)
-    //         .map((chatRoomUser) => chatRoomUser.user);
-
-    //         console.log(chatRoomUsers);
-
-    //       const authUser = await Auth.currentAuthenticatedUser();
-    //       setUser(chatRoomUsers.find((user) => user.id != authUser.attributes.sub));
-    //       console.log(user);
-    //     };
-    //     fetchUsers();
-    //   }, []);
-
-    //   useEffect(() => {
-    //     if (!chatRooms.chatRoomLastMessageId) {
-    //       return;
-    //     }
-    //     DataStore.query(Message, chatRooms.chatRoomLastMessageId).then(
-    //       setLastMessage
-    //     );
-    //   }, []);
 
     useEffect(() => {
         setSeed(Math.floor(Math.random() * 5000));
+    }, []);
+
+    useEffect(() => {
+        if (!chatRoom.chatRoomLastMessageId) {
+            return;
+        }
+        DataStore.query(Message, chatRoom.chatRoomLastMessageId).then(setLastMessage);
     }, []);
 
     const createChat = () => {
@@ -69,14 +39,22 @@ function SidebarChat({ addNewChat }) {
         }
     };
 
+    if (!user) {
+        return;
+    }
+
     return !addNewChat ? (
-        <div className="sidebarChat">
-            <Avatar src={`https://avatars.dicebear.com/api/human/${seed}.svg`} />
-            <div className="sidebarChat__info">
-                <h2>Room name</h2>
-                <p>Last message...</p>
-            </div>
-        </div>
+        <Link to={`/rooms/${chatRoom.id}`}>
+            <li>
+                <div className="sidebarChat">
+                    <Avatar src={user.imageUri} />
+                    <div className="sidebarChat__info">
+                        <h2>{user.name}</h2>
+                        {!chatRoom.lastMessage && <p>{lastMessage?.content}</p>}
+                    </div>
+                </div>
+            </li>
+        </Link>
     ) : (
         <div onClick={createChat} className="sidebarChat">
             <h2>Add new Chat</h2>
