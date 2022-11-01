@@ -44,7 +44,7 @@ function SidebarChat({ addNewChat, chatRoom }) {
     }
 
     return !addNewChat ? (
-        <Link to={`/rooms/${chatRoom.id}`}>
+        <Link to={`/rooms/${chatRoom.id}`} style={{ textDecoration: 'none', color: 'black' }}>
             <li>
                 <div className="sidebarChat">
                     <Avatar src={user.imageUri} />

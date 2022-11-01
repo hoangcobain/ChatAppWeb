@@ -7,6 +7,8 @@ import { User, Message } from '../../models';
 function MessageProp({ message }) {
     const [user, setUser] = useState(User | undefined);
     const [isMe, setIsMe] = useState(false);
+    // const [messages, setMessages] = useState([Message]);
+    // console.log(messages);
 
     useEffect(() => {
         DataStore.query(User, message.userID).then(setUser);
@@ -23,13 +25,23 @@ function MessageProp({ message }) {
         checkIfMe();
     }, [user]);
 
+    // useEffect(() => {
+    //     const subscription = DataStore.observe(Message).subscribe((data) => {
+    //         // console.log(data.model, data.opType, data.element);
+    //         if (data.model === Message && data.opType === 'INSERT') {
+    //             setMessages((existingMessages) => [data.element, ...existingMessages]);
+    //         }
+    //     });
+    //     return () => subscription.unsubscribe();
+    // }, []);
+
     return (
         <li>
             <p
                 className="chat__message"
                 style={{
                     backgroundColor: isMe ? '#c9e4fc' : 'white',
-                    marginLeft: isMe ? 470 : 0,
+                    marginLeft: isMe ? 750 : 0,
                     marginRight: isMe ? 0 : 470,
                 }}
             >

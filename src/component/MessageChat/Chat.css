@@ -50,7 +50,7 @@
     background-color: #2f95dc;
 }
 
-.chat__footer > form {
+/* .input__box > form {
     flex: 1;
     display: flex;
 }
@@ -69,8 +69,34 @@
 .chat__footer > .MuiSvgIcon-root {
     padding: 10px;
     color: gray;
-}
+} */
 .list__text {
     list-style: none;
     padding: 0;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.input__box {
+    display: flex;
+    flex-direction: row;
+    /* justify-content: space-around; */
+    align-items: center;
+    width: 100%;
+}
+
+.input__message {
+    margin-left: 10px;
+    flex: 1;
+    width: 850px;
+    border-radius: 30px;
+    padding: 10px;
+    border: none;
+}
+
+.input__icon {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 60px;
 }
