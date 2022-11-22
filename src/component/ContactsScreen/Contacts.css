@@ -1,0 +1,25 @@
+.modal__contact {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 2px black;
+}
+.modal__ul {
+    list-style: none;
+}
+
+.modal__button {
+    background-color: #2f95dc;
+    color: white;
+    border-width: 0;
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.modal__button:hover {
+    background-color: lightblue;
+}

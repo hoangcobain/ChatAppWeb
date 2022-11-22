@@ -78,4 +78,4 @@
     "authTriggerConnections": "[\n  {\n    \"triggerType\": \"PostConfirmation\",\n    \"lambdaFunctionName\": \"SignalClonePostConfirmation\"\n  }\n]",
     "permissions": []
   }
-}
+} 

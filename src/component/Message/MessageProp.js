@@ -3,15 +3,16 @@ import './Message.css';
 import moment from 'moment';
 import { DataStore, Auth } from 'aws-amplify';
 import { User, Message } from '../../models';
+import { AmplifyS3Image } from '@aws-amplify/ui-react/legacy';
 
 function MessageProp({ message }) {
     const [user, setUser] = useState(User | undefined);
     const [isMe, setIsMe] = useState(false);
-    // const [messages, setMessages] = useState([Message]);
-    // console.log(messages);
+    const [messages, setMessages] = useState(message);
+    // console.log(messages.image);
 
     useEffect(() => {
-        DataStore.query(User, message.userID).then(setUser);
+        DataStore.query(User, messages.userID).then(setUser);
     }, []);
 
     useEffect(() => {
@@ -25,15 +26,17 @@ function MessageProp({ message }) {
         checkIfMe();
     }, [user]);
 
-    // useEffect(() => {
-    //     const subscription = DataStore.observe(Message).subscribe((data) => {
-    //         // console.log(data.model, data.opType, data.element);
-    //         if (data.model === Message && data.opType === 'INSERT') {
-    //             setMessages((existingMessages) => [data.element, ...existingMessages]);
-    //         }
-    //     });
-    //     return () => subscription.unsubscribe();
-    // }, []);
+    useEffect(() => {
+        const subscription = DataStore.observe(Message, messages.id).subscribe((data) => {
+            // console.log(data.model, data.opType, data.element);
+            if (data.model === Message) {
+                if (data.opType === 'UPDATE') {
+                    setMessages((message) => ({ ...message, ...data.element }));
+                }
+            }
+        });
+        return () => subscription.unsubscribe();
+    }, []);
 
     return (
         <li>
@@ -46,8 +49,13 @@ function MessageProp({ message }) {
                 }}
             >
                 {!isMe && <span className="chat__name">{user?.name}</span>}
-                {message.content}
-                <span className="chat__timestamp">{moment(message.createdAt).fromNow()}</span>
+                {messages.image && (
+                    <div className="chat__image">
+                        <AmplifyS3Image imgKey={messages.image} className="chat__image_view" />
+                    </div>
+                )}
+                {messages.content}
+                <span className="chat__timestamp">{moment(messages.createdAt).fromNow()}</span>
             </p>
         </li>
     );

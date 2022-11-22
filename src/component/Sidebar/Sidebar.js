@@ -9,10 +9,12 @@ import { ChatRoomUser, ChatRoom, User } from '../../models';
 
 import './Sidebar.css';
 import SidebarChat from '../SidebarChat/SidebarChat';
+import ContactsScreen from '../ContactsScreen/ContactsScreen';
 
 function Sidebar() {
     const [chatRooms, setChatRooms] = useState([ChatRoom]);
     const [user, setUser] = useState(User | null);
+    const [modalShow, setModalShow] = useState(false);
 
     useEffect(() => {
         const fetchChatRoom = async () => {
@@ -38,9 +40,9 @@ function Sidebar() {
     }, []);
     const logOut = async () => {
         await Auth.signOut();
-        // console.log(Auth.signOut());
         // DataStore.clear();
     };
+
     return (
         <div className="sidebar">
             <div className="sidebar__header">
@@ -51,7 +53,8 @@ function Sidebar() {
                         <DonutLargeIcon />
                     </IconButton>
                     <IconButton>
-                        <ChatIcon />
+                        <ChatIcon onClick={() => setModalShow(true)} />
+                        <ContactsScreen show={modalShow} onHide={() => setModalShow(false)} />
                     </IconButton>
                     <IconButton>
                         <MoreVertIcon />
@@ -72,10 +75,6 @@ function Sidebar() {
                         return <SidebarChat key={item.id} chatRoom={item} />;
                     })}
                 </ul>
-
-                {/* <SidebarChat />
-                <SidebarChat />
-                <SidebarChat /> */}
                 <button onClick={logOut}>Logout</button>
             </div>
         </div>

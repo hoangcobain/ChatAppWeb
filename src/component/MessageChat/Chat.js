@@ -8,19 +8,27 @@ import InsertEmoticonIcon from '@material-ui/icons/InsertEmoticon';
 import MicIcon from '@material-ui/icons/Mic';
 import { useParams } from 'react-router-dom';
 import { ChatRoom, ChatRoomUser, Message, User } from '../../models';
-import { Auth, DataStore, SortDirection } from 'aws-amplify';
+import { Auth, DataStore, SortDirection, Storage } from 'aws-amplify';
 import MessageProp from '../Message/MessageProp';
 import moment from 'moment';
 import EmojiPicker from 'emoji-picker-react';
+import useWindowDimensions from '../WindowDemesions/useWindowDimensions';
+import { Close, InsertPhoto } from '@material-ui/icons';
+import Uploady, { useItemFinishListener, useItemStartListener } from '@rpldy/uploady';
+import UploadButton from '@rpldy/upload-button';
+import UpLoadPreView from '@rpldy/upload-preview';
+import { v4 as uuidv4 } from 'uuid';
 
 function Chat() {
     const [input, setInput] = useState('');
     const [seed, setSeed] = useState('');
     const { roomId } = useParams();
     const [chatRoom, setChatRoom] = useState(ChatRoom | null);
-    const [messages, setMessages] = useState([Message]);
+    const [messages, setMessages] = useState([Message] | null);
     const [user, setUser] = useState(User | null);
     const [isEmojiOpen, setIsEmojiOpen] = useState(false);
+    const [image, setImage] = useState(null);
+    const [progress, setProgress] = useState(0);
 
     useEffect(() => {
         fetchUsers();
@@ -50,8 +58,6 @@ function Chat() {
             .filter((chatRoomUser) => chatRoomUser.chatRoom.id === roomId)
             .map((chatRoomUser) => chatRoomUser.user);
 
-        // setAllUsers(chatRoomUsers);
-
         const authUser = await Auth.currentAuthenticatedUser();
         setUser(chatRoomUsers.find((user) => user.id != authUser.attributes.sub));
     };
@@ -75,6 +81,7 @@ function Chat() {
         const fetchedMessages = await DataStore.query(Message, (message) => message.chatroomID('eq', chatRoom?.id), {
             sort: (message) => message.createdAt(SortDirection.DESCENDING),
         });
+        // console.log(fetchedMessages);
         setMessages(fetchedMessages);
     };
     if (!chatRoom) {
@@ -98,7 +105,7 @@ function Chat() {
     const resetFields = () => {
         setInput('');
         setIsEmojiOpen(false);
-        // setImage(null);
+        setImage(null);
         // setProgress(0);
         // setSoundURI(null);
         // removeMessageReplyTo();
@@ -128,11 +135,67 @@ function Chat() {
 
     const onPress = (e) => {
         e.preventDefault();
-        if (input) {
+        if (image) {
+            sendImage();
+        } else if (input) {
             sendMessage();
         } else {
             console.log('fail');
         }
+    };
+
+    //image
+    const getBlob = async (uri) => {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        return blob;
+    };
+
+    const progressCallback = async (progress) => {
+        setProgress(progress.loaded / progress.total);
+    };
+
+    const sendImage = async () => {
+        if (!image) {
+            return;
+        }
+        const blob = await getBlob(image);
+        const { key } = await Storage.put(`${uuidv4()}.png`, blob, {
+            progressCallback,
+        });
+
+        const user = await Auth.currentAuthenticatedUser();
+        const newMessage = await DataStore.save(
+            new Message({
+                content: input,
+                image: key,
+                userID: user.attributes.sub,
+                chatroomID: chatRoom.id,
+            }),
+        );
+
+        updateLastMessage(newMessage);
+        resetFields();
+    };
+
+    const MyUpLoadButton = () => {
+        useItemStartListener((item) => {
+            var dataURL = URL.createObjectURL(item.file);
+            setImage(dataURL);
+        });
+        return (
+            <>
+                <UploadButton className="input__upload">
+                    <InsertPhoto />
+                </UploadButton>
+                {image && (
+                    <div className="image_flex">
+                        <img src={image} className="image_view" />
+                        <Close className="image_icon" onClick={() => setImage(null)} />
+                    </div>
+                )}
+            </>
+        );
     };
 
     return (
@@ -159,9 +222,10 @@ function Chat() {
 
             <div className="chat__body">
                 <ul className="list__text">
-                    {messages.map((message) => {
-                        return <MessageProp key={message.id} message={message} />;
-                    })}
+                    {messages &&
+                        messages.map((message) => {
+                            return <MessageProp key={message.id} message={message} />;
+                        })}
                 </ul>
             </div>
 
@@ -182,7 +246,10 @@ function Chat() {
                                 setIsEmojiOpen((currentValue) => !currentValue);
                             }}
                         />
-                        <MicIcon />
+
+                        <Uploady destination={{ url: process.env.UPLOAD_URL }}>
+                            <MyUpLoadButton />
+                        </Uploady>
                     </div>
 
                     <form>

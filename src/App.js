@@ -45,8 +45,6 @@ function App() {
                         </Route>
                     </Switch>
                 </Router>
-
-                {/* <button onClick={logOut}>Log out</button> */}
             </div>
         </div>
     );

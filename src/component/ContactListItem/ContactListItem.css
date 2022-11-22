@@ -1,0 +1,25 @@
+.user__contact {
+    width: 70vh;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 20px;
+    justify-content: space-around;
+}
+
+.user__info {
+    /* flex: 1; */
+    margin-left: 6px;
+}
+
+.user__task {
+    text-align: end;
+    align-self: center;
+    flex: 1;
+    padding-right: 16px;
+}
+
+.user__icon {
+    color: gray;
+    margin-right: 10px;
+}

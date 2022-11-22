@@ -23,3 +23,18 @@
     font-weight: 800;
     font-size: xx-small;
 }
+
+.chat__image {
+    width: 200px;
+    height: 200px;
+}
+/* .amplify-s3-image {
+    --height: 200px;
+    --width: 400px;
+} */
+
+.chat__image_view {
+    /* position: absolute;
+    width: 50px;
+    aspect-ratio: 4/3; */
+}
