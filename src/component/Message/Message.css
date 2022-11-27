@@ -28,10 +28,11 @@
     width: 200px;
     height: 200px;
 }
-/* .amplify-s3-image {
+amplify-s3-image {
     --height: 200px;
-    --width: 400px;
-} */
+    --width: 200px;
+    background-size: cover;
+}
 
 .chat__image_view {
     /* position: absolute;
